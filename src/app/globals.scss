@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer utilities {
+	.bg-cyan-1 {
+		@apply bg-cyan-950/30
+	}
+	.bg-cyan-2 {
+		@apply bg-cyan-600/80
+	}
+}
+
+html {
+	font-size: clamp(18px, 1.5vw, 40px);
+}
+
+body {
+	height: 100vh;
+}
+
+*:disabled {
+	opacity: 0.3;
+}
