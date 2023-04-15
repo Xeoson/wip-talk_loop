@@ -1,7 +1,7 @@
+import { BASE_URL } from "@/common/const";
 import Providers from "@/components/common/Providers";
 import { getServerSession } from "next-auth";
 import { Ubuntu } from "next/font/google";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import browserRoutes from "../../common/browserRoutes";
 import { authOptions } from "../api/auth/[...nextauth]/route";
@@ -23,17 +23,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-
-  const headersInst = headers();
-  if (!session && headersInst.get("x-invoke-path") !== browserRoutes.login) {
-    redirect(browserRoutes.login);
-  } else if (
-    session &&
-    headersInst.get("x-invoke-path") == browserRoutes.login
-  ) {
-    redirect(browserRoutes.index);
-  }
 
   return (
     <html lang="en">
