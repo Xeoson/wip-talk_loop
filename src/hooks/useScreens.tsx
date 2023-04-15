@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import resolveConfig from "tailwindcss/resolveConfig";
-import tailConfig from "../../tailwind.config"
+// import tailConfig from "../../tailwind.config"
 
 const toNum = (str: string) => {
   return Number(str.replace(/\D/g, ""));
@@ -58,7 +58,7 @@ const createThemeScreens = <T extends Record<string, string>>(
   return { useMatchScreen, useScreen };
 };
 
-const { theme } = resolveConfig(tailConfig);
+const { theme } = resolveConfig(require("../../tailwind.config"));
 export const { useScreen, useMatchScreen } = createThemeScreens(
   theme?.screens as any
 );
