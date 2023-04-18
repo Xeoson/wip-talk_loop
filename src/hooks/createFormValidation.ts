@@ -115,12 +115,14 @@ export const createFormValidation = <S extends Record<string, any>>(
     return useSyncExternalStore(
       subscribeField(fieldName),
       () => fields[fieldName],
+			() => undefined,
     );
   };
   const useFieldError = <F extends keyof S>(fieldName: F) => {
     return useSyncExternalStore(
       subscribeError(fieldName),
-      () => errors[fieldName]
+      () => errors[fieldName],
+			() => null
     );
   };
 
