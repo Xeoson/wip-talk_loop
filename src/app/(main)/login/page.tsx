@@ -202,14 +202,14 @@ const LoginPage = (props: LoginPageProps) => {
         <button
           disabled={isFetching}
           className="p-1 text-lg rounded-full bg-cyan-2"
-          onClick={() => signIn("google")}
+          onClick={() => signIn("google", {redirect: false})}
         >
           <AiOutlineGoogle />
         </button>
         <button
           disabled={isFetching}
           className="p-1 text-lg rounded-full bg-cyan-2"
-          onClick={() => signIn("github")}
+          onClick={() => signIn("github", {redirect: false})}
         >
           <AiOutlineGithub />
         </button>
