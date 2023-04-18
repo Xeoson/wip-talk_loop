@@ -5,7 +5,7 @@ import { Triangle } from "react-loader-spinner";
 import InfoTip from "../InfoTip";
 
 export interface InputProps extends DPInput {
-  error?: string;
+  error?: string | null;
   errorFetching?: boolean;
   setValue: (value: string) => any;
   extraChild?: ReactNode;

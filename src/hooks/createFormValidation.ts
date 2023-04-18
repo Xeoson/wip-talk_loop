@@ -39,16 +39,16 @@ export const createFormValidation = <S extends Record<string, any>>(
   rules: Partial<IRules<S>>
 ) => {
   let fields: S = { ...initFields };
-  let errors = Object.keys(fields).reduce<Record<keyof S, string>>(
+  let errors = Object.keys(rules).reduce<Record<keyof S, string | null>>(
     (prev, next: keyof S) => {
-      prev[next] = "";
+      prev[next] = null;
       return prev;
     },
     {} as any
   );
-	let lastIsValid = false
 
   const Validate = (fieldName: keyof S) => {
+		if (!rules[fieldName]) return;
     return findAsyncSequential(rules[fieldName] ?? [], async (rule) => {
       if (await rule.isValid(fields[fieldName])) {
         return false;
@@ -57,7 +57,6 @@ export const createFormValidation = <S extends Record<string, any>>(
       }
     }).then((unvalidRule) => {
       if (unvalidRule) {
-				lastIsValid = false
         if (errors[fieldName] != unvalidRule.errorMessage) {
           errors[fieldName] = unvalidRule.errorMessage;
           errorCallbacks.forEach(([fieldN, cb]) => {
@@ -65,7 +64,6 @@ export const createFormValidation = <S extends Record<string, any>>(
           });
         }
       } else {
-				lastIsValid = true
         if (errors[fieldName] != "") {
           errors[fieldName] = "";
           errorCallbacks.forEach(([fieldN, cb]) => {
@@ -74,15 +72,19 @@ export const createFormValidation = <S extends Record<string, any>>(
         }
       }
 
-      return !errors[fieldName].length;
+      return !errors[fieldName]?.length;
     });
   };
 
   const validateFields = () => {
-    return Object.keys(fields).map((field) => {
+    return Object.keys(rules).map((field) => {
       return Validate(field);
     });
   };
+
+	const isValid = () => {
+		return !Object.values(errors).some((v) => v?.length || v === null)
+	}
 
   const resetFormFields = () => {
     fields = { ...initFields };
@@ -128,7 +130,7 @@ export const createFormValidation = <S extends Record<string, any>>(
     getFields: () => fields,
     setField,
     validateFields,
-		isValid: () => lastIsValid,
+		isValid,
     resetFormFields,
   };
 };

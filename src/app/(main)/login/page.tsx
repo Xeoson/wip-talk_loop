@@ -92,7 +92,7 @@ const {
 interface LoginPageProps {}
 
 const LoginPage = (props: LoginPageProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   const type = useFieldValue("type");
   const emailError = useFieldError("email");
@@ -107,7 +107,7 @@ const LoginPage = (props: LoginPageProps) => {
     if (!isValid()) return;
 
     const { email, password, type } = getFields();
-    setIsLoading(true);
+    setIsFetching(true);
     try {
       const res = await signIn(type.toLowerCase(), {
         email,
@@ -121,13 +121,15 @@ const LoginPage = (props: LoginPageProps) => {
     } catch (error) {
       console.warn(error);
     } finally {
-      setIsLoading(false);
+      setIsFetching(false);
     }
   };
 
   useEffectAfterMount(() => {
     validateFields();
   }, [type]);
+
+  const isUnvalid = !isValid() || isEmailFetching || isFetching;
 
   return (
     <div className="flex flex-col items-center px-6 py-4 rounded-md shadow-md bg-cyan-1 grow max-w-modal">
@@ -137,7 +139,7 @@ const LoginPage = (props: LoginPageProps) => {
         onSubmit={handleSubmit}
       >
         <Input
-          disabled={isLoading}
+          disabled={isFetching}
           className="mt-4"
           error={emailError}
           errorFetching={isEmailFetching}
@@ -145,17 +147,13 @@ const LoginPage = (props: LoginPageProps) => {
           setValue={(v) => setField("email", v)}
         />
         <PasswordInput
-          disabled={isLoading}
+          disabled={isFetching}
           className="mt-2"
           error={passwordError}
           placeholder="Password"
           setValue={(v) => setField("password", v)}
         />
-        <Button
-          disabled={isLoading || isEmailFetching || !isValid()}
-          type="submit"
-          className="w-1/2 mt-3"
-        >
+        <Button disabled={isUnvalid} type="submit" className="w-1/2 mt-3">
           Submit
         </Button>
       </form>
@@ -165,6 +163,7 @@ const LoginPage = (props: LoginPageProps) => {
           <>
             <p className="whitespace-nowrap">{"Not registered?"}</p>
             <button
+              disabled={isFetching}
               className="underline"
               onClick={() => {
                 setField("type", "SignUp");
@@ -177,6 +176,7 @@ const LoginPage = (props: LoginPageProps) => {
           <>
             <p className="whitespace-nowrap">{"Already have account?"}</p>
             <button
+              disabled={isFetching}
               className="underline"
               onClick={() => {
                 setField("type", "SignIn");
@@ -189,12 +189,14 @@ const LoginPage = (props: LoginPageProps) => {
       </div>
       <div className="flex mt-4 space-x-2">
         <button
+          disabled={isFetching}
           className="p-1 text-lg rounded-full bg-cyan-2"
           onClick={() => signIn("google")}
         >
           <AiOutlineGoogle />
         </button>
         <button
+          disabled={isFetching}
           className="p-1 text-lg rounded-full bg-cyan-2"
           onClick={() => signIn("github")}
         >
