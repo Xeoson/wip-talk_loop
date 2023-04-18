@@ -1,15 +1,17 @@
 import { DPInput } from "@/common/types";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import {FieldError} from 'react-hook-form'
+import { Triangle } from "react-loader-spinner";
+import InfoTip from "../InfoTip";
 
 export interface InputProps extends DPInput {
-  error?: FieldError;
+  error?: string;
+  errorFetching?: boolean;
   setValue: (value: string) => any;
   extraChild?: ReactNode;
 }
 
-const Input = ({ error, setValue, ...props }: InputProps) => {
+const Input = ({ error, errorFetching, setValue, ...props }: InputProps) => {
   const [hasValue, setHasValue] = useState(false);
   const [hasFocus, setHasFocus] = useState(false);
 
@@ -34,7 +36,6 @@ const Input = ({ error, setValue, ...props }: InputProps) => {
       inputRef.current?.blur();
     }
   }, [hasFocus]);
-
 
   const handleSetValue = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -64,14 +65,13 @@ const Input = ({ error, setValue, ...props }: InputProps) => {
       >
         {props.placeholder}
       </label>
-      {error && (
-        <span className="mx-2 text-red-500/90 text-xxs whitespace-nowrap">
-          {error.message}
-        </span>
+      {errorFetching ? (
+        <Triangle color="#c9d0d1" wrapperClass="px-1" height={20} width={20} />
+      ) : (
+        error && <InfoTip className="mx-2 text-red-500/90" text={error} />
       )}
       {props.extraChild}
     </div>
   );
 };
-
 export default Input;

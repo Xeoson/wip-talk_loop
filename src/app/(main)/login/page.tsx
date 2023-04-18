@@ -5,100 +5,157 @@ import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
 import PasswordInput from "@/components/Input/PasswordInput";
 import { popupActions } from "@/components/common/Popup/slice";
+import {
+  IRules,
+  createFormValidation,
+  defaultValidateRules,
+} from "@/hooks/createFormValidation";
+import useEffectAfterMount from "@/hooks/useEffectAfterMount";
 import client from "@/lib/apollo/client";
 import { gql } from "@apollo/client";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { AiOutlineGoogle, AiOutlineGithub } from "react-icons/ai";
+import { AiOutlineGithub, AiOutlineGoogle } from "react-icons/ai";
 import { useDispatch } from "react-redux";
-import * as yup from "yup";
+import { emailRegexp } from "./common/const";
 
-const defaultValues = { email: "", password: "" };
+interface IDefaultValues {
+  email: string;
+  emailFetching: boolean;
+  password: string;
+  type: "SignIn" | "SignUp";
+}
 
-const validateUserExist = async (email?: string) => {
+const defaultValues: IDefaultValues = {
+  email: "",
+  password: "",
+  emailFetching: false,
+  type: "SignIn",
+};
+
+const validateUserExisting = async (email?: string) => {
   const { data } = await client.query({
     query: gql`
       query ($email: String) {
         userExist(email: $email)
       }
     `,
-    variables: { email },
+    variables: { email: email?.toLocaleLowerCase() },
   });
-  return !data.userExist;
+  return data.userExist;
 };
 
-const validateRules = yup.object<typeof defaultValues>({
-  email: yup
-    .string()
-    .matches(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/gi,
-      "Invalid format"
-    )
-    .test("user exist", "User already exist", validateUserExist),
-  password: yup.string().min(6, "At least 6 chars"),
-});
+const rules: Partial<IRules<IDefaultValues>> = {
+  email: [
+    {
+      isValid: (val) => new RegExp(emailRegexp, "g").test(val),
+      errorMessage: "Invalid format",
+    },
+    {
+      isValid: async (value) => {
+        if (getFields().type == "SignIn") {
+          setField("emailFetching", true);
+          const isExist = await validateUserExisting(value);
+          setField("emailFetching", false);
+          return isExist;
+        }
+        return true;
+      },
+      errorMessage: "User not exist",
+    },
+    {
+      isValid: async (value) => {
+        if (getFields().type == "SignUp") {
+          setField("emailFetching", true);
+          const isExist = await validateUserExisting(value);
+          setField("emailFetching", false);
+          return !isExist;
+        }
+        return true;
+      },
+      errorMessage: "User already exist",
+    },
+  ],
+  password: [defaultValidateRules.setMinLength(6)],
+};
+
+const {
+  setField,
+  useFieldError,
+  useFieldValue,
+  getFields,
+  validateFields,
+  isValid,
+} = createFormValidation(defaultValues, rules);
 
 interface LoginPageProps {}
 
 const LoginPage = (props: LoginPageProps) => {
-  const [type, setType] = useState<"SignIn" | "SignUp">("SignIn");
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    register,
-    setValue,
-    formState: { errors },
-    handleSubmit,
-  } = useForm({
-    defaultValues,
-    mode: "onBlur",
-    resolver: yupResolver(validateRules),
-  });
+
+  const type = useFieldValue("type");
+  const emailError = useFieldError("email");
+  const isEmailFetching = useFieldValue("emailFetching");
+  const passwordError = useFieldError("password");
 
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const onSubmit = (data: typeof defaultValues) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!isValid()) return;
+
+    const { email, password, type } = getFields();
     setIsLoading(true);
-    signIn(type.toLowerCase(), { ...data, redirect: false })
-      .then((res) => {
-        if (res?.error) {
-          dispatch(popupActions.setMessage(res.error));
-          return;
-        }
-        router.push(browserRoutes.index);
-      })
-      .finally(() => {
-        setIsLoading(false);
+    try {
+      const res = await signIn(type.toLowerCase(), {
+        email,
+        password,
+        redirect: false,
       });
+      if (res?.error) {
+        return dispatch(popupActions.setMessage(res.error));
+      }
+      router.push(browserRoutes.index);
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffectAfterMount(() => {
+    validateFields();
+  }, [type]);
 
   return (
     <div className="flex flex-col items-center px-6 py-4 rounded-md shadow-md bg-cyan-1 grow max-w-modal">
       <h1 className="font-semibold text-md">{type}</h1>
       <form
         className="flex flex-col items-center w-full"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit}
       >
         <Input
           disabled={isLoading}
           className="mt-4"
-          error={errors.email}
+          error={emailError}
+          errorFetching={isEmailFetching}
           placeholder="Email"
-          setValue={(v) => setValue("email", v)}
-          {...register("email", { required: "Required field" })}
+          setValue={(v) => setField("email", v)}
         />
         <PasswordInput
           disabled={isLoading}
           className="mt-2"
-          error={errors.password}
+          error={passwordError}
           placeholder="Password"
-          setValue={(v) => setValue("password", v)}
-          {...register("password", { required: "Required field" })}
+          setValue={(v) => setField("password", v)}
         />
-        <Button disabled={isLoading} type="submit" className="w-1/2 mt-3">
+        <Button
+          disabled={isLoading || isEmailFetching || !isValid()}
+          type="submit"
+          className="w-1/2 mt-3"
+        >
           Submit
         </Button>
       </form>
@@ -110,7 +167,7 @@ const LoginPage = (props: LoginPageProps) => {
             <button
               className="underline"
               onClick={() => {
-                setType("SignUp");
+                setField("type", "SignUp");
               }}
             >
               SignUp
@@ -122,10 +179,10 @@ const LoginPage = (props: LoginPageProps) => {
             <button
               className="underline"
               onClick={() => {
-                setType("SignIn");
+                setField("type", "SignIn");
               }}
             >
-              {"SignIn"}
+              SignIn
             </button>
           </>
         )}

@@ -18,10 +18,12 @@
     "bcrypt": "^5.1.0",
     "framer-motion": "^10.12.2",
     "graphql": "^16.6.0",
+    "joi": "^17.9.1",
     "lodash.merge": "^4.6.2",
     "next-auth": "^4.22.0",
     "react-hook-form": "^7.43.9",
     "react-icons": "^4.8.0",
+    "react-loader-spinner": "^5.3.4",
     "react-redux": "^8.0.5",
     "sass": "^1.62.0",
     "yup": "^1.1.1"
