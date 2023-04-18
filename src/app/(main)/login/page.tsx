@@ -24,6 +24,7 @@ interface IDefaultValues {
   email: string;
   emailFetching: boolean;
   password: string;
+	username: string,
   type: "SignIn" | "SignUp";
 }
 
@@ -31,6 +32,7 @@ const defaultValues: IDefaultValues = {
   email: "",
   password: "",
   emailFetching: false,
+	username: '',
   type: "SignIn",
 };
 
@@ -106,12 +108,13 @@ const LoginPage = (props: LoginPageProps) => {
     e.preventDefault();
     if (!isValid()) return;
 
-    const { email, password, type } = getFields();
+    const { email, password, type, username } = getFields();
     setIsFetching(true);
     try {
       const res = await signIn(type.toLowerCase(), {
         email,
         password,
+				username,
         redirect: false,
       });
       if (res?.error) {
@@ -135,12 +138,20 @@ const LoginPage = (props: LoginPageProps) => {
     <div className="flex flex-col items-center px-6 py-4 rounded-md shadow-md bg-cyan-1 grow max-w-modal">
       <h1 className="font-semibold text-md">{type}</h1>
       <form
-        className="flex flex-col items-center w-full"
+        className="flex flex-col items-center w-full pt-2"
         onSubmit={handleSubmit}
       >
+        {type == "SignUp" && (
+          <Input
+            disabled={isFetching}
+            className="mt-2"
+            placeholder="Username"
+            setValue={(v) => setField("username", v)}
+          />
+        )}
         <Input
           disabled={isFetching}
-          className="mt-4"
+          className="mt-2"
           error={emailError}
           errorFetching={isEmailFetching}
           placeholder="Email"
