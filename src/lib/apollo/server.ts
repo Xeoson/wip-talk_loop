@@ -1,6 +1,6 @@
 import { ApolloServer } from "@apollo/server";
 import merge from "lodash.merge";
-import { prisma } from "../prisma";
+import {prisma} from "../prisma";
 import user from "./schema/user";
 
 const typeDefs = [user.typeDefs];

@@ -2,15 +2,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { signOut } from "next-auth/react";
 import SignOutButton from "@/components/Button/SignOutButton";
+import Chats from "./components/Chats";
+import ChatArea from "./components/ChatArea";
 
 export default async function Home(props: any) {
-	const session = await getServerSession(authOptions)
+
   return (
-    <div className="">
-      <h1 className="text-neutral-300/95">
-        Hi, {session?.user?.name ?? session?.user?.email}
-      </h1>
-      <SignOutButton>Sign Out</SignOutButton>
+    <div className="flex rounded-md w-chat h-[85vh] bg-cyan-1">
+      <Chats />
+			<ChatArea />
     </div>
   );
 }

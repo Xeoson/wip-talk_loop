@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcrypt";
+import { generateUsername } from "friendly-username-generator";
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-import {generateUsername} from 'friendly-username-generator'
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -51,7 +51,7 @@ export const authOptions: AuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-				username: {label: 'Username', type: 'text'}
+        username: { label: "Username", type: "text" },
       },
       async authorize({ email, password, username }: any, req) {
         if (!email || !password) throw new Error("Invalid credentials");

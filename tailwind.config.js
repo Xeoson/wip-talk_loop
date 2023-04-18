@@ -6,7 +6,10 @@ module.exports = {
   theme: {
     extend: {
 			maxWidth: {
-				'modal': 'min(400px, 100%)'
+				'modal': 'min(20rem, 100%)'
+			},
+			width: {
+				'chat': 'max(80%, 40rem)'
 			},
 			fontSize: {
 				'xxs': '0.55rem'
