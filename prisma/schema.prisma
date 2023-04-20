@@ -39,14 +39,15 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  id            String                    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
-  email         String?   @unique
+  email         String?                   @unique
   emailVerified DateTime?
   image         String?
   passwordHash  String?
   accounts      Account[]
   sessions      Session[]
+  conversations ConversationParticipant[]
 }
 
 model VerificationToken {
@@ -56,4 +57,31 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String       @db.ObjectId
+  user           User         @relation(fields: [userId], references: [id])
+  viewed         Boolean      @default(false)
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model Conversation {
+  id           String                    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  ownerId      String                    @db.ObjectId
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model Message {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  Conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String       @db.ObjectId
+  text           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }

@@ -1,3 +1,4 @@
+import { ArrayKeys } from "@/common/types";
 import { Payload } from "@prisma/client/runtime";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
@@ -17,6 +18,7 @@ const initialState: IInitialState = {
 	isOpened: false,
 	searchQuery: ''
 };
+
 
 export const { actions: searchActions, reducer: searchReducer } = createSlice({
   name: "searchReducer",

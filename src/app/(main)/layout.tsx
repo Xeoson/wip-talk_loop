@@ -1,10 +1,7 @@
-import { BASE_URL } from "@/common/const";
 import Providers from "@/components/common/Providers";
 import { getServerSession } from "next-auth";
 import { Ubuntu } from "next/font/google";
-import { redirect } from "next/navigation";
-import browserRoutes from "../../common/browserRoutes";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { authOptions } from "../../pages/api/auth/[...nextauth]";
 import "../globals.scss";
 
 export const metadata = {
@@ -23,13 +20,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
 
   return (
     <html lang="en">
       <body
         className={`bg-cyan-900 text-neutral-300/95 flex items-center justify-center ${MainFont.className}`}
       >
-        <Providers>{children}</Providers>
+        <Providers session={session!}>{children}</Providers>
       </body>
     </html>
   );

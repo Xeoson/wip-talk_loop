@@ -1,4 +1,7 @@
 import { gql } from "@apollo/client";
+import { Prisma } from "@prisma/client";
+
+type UserType = Pick<Prisma.UserGetPayload<null>, "id" | "name" | "image"> & {name: string}
 
 export const SEARCH_USERS = gql`
   query ($query: String!) {
@@ -10,5 +13,19 @@ export const SEARCH_USERS = gql`
   }
 `;
 export type SearchUsersResponse = {
-  searchUsersByName: { id: string; name: string, image?: string }[];
+  searchUsersByName: UserType[];
 };
+
+
+export const CREATE_CHAT = gql`
+  mutation Mutation($users: [String]!) {
+    createConversation(users: $users) {
+      conversationId
+    }
+  }
+`;
+export type CreateChatResponse = {
+	createConversation: {
+		conversationId: string
+	}
+}

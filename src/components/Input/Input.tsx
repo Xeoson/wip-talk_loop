@@ -11,31 +11,10 @@ export interface InputProps extends DPInput {
   extraChild?: ReactNode;
 }
 
-const Input = ({ error, errorFetching, setValue, ...props }: InputProps) => {
+const Input = ({ error, errorFetching, setValue, placeholder, ...props }: InputProps) => {
   const [hasValue, setHasValue] = useState(false);
-  const [hasFocus, setHasFocus] = useState(false);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleInputFocus = () => {
-    if (inputRef.current && !hasFocus) {
-      setHasFocus(true);
-    }
-  };
-
-  const onBlur = () => {
-    setHasFocus(false);
-  };
-
-  const wrapperRef = useOutsideClick<HTMLDivElement>(onBlur);
-
-  useEffect(() => {
-    if (hasFocus) {
-      inputRef.current?.focus();
-    } else {
-      inputRef.current?.blur();
-    }
-  }, [hasFocus]);
 
   const handleSetValue = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -44,18 +23,15 @@ const Input = ({ error, errorFetching, setValue, ...props }: InputProps) => {
   };
 
   return (
-    <div
-      ref={wrapperRef}
-      className={`text-xs min-w-0 w-full py-1 flex items-center px-2 cursor-text focus-within:shadow-cyan-500/20 focus-within:shadow-2xl transition focus-within:border-neutral-300 border-2 border-neutral-300/80 placeholder:text-neutral-300/80 rounded-lg relative ${
+    <label
+      className={`text-xs min-w-0 w-full py-1 flex items-center px-2 cursor-text focus-within:shadow-cyan-500/20 focus-within:shadow-lg transition focus-within:border-neutral-300 border-2 border-neutral-300/80 placeholder:text-neutral-300/80 rounded-lg relative ${
         props.className ?? ""
       }`}
-      onClick={handleInputFocus}
     >
       <input
-        ref={inputRef}
         {...props}
+        ref={inputRef}
         className="w-full min-w-0 pt-2 bg-transparent outline-none peer"
-        placeholder=""
         onChange={handleSetValue}
       />
       <label
@@ -63,15 +39,15 @@ const Input = ({ error, errorFetching, setValue, ...props }: InputProps) => {
           hasValue ? "-translate-y-2 scale-75" : ""
         }`}
       >
-        {props.placeholder}
+        {placeholder}
       </label>
       {errorFetching ? (
         <Triangle color="#c9d0d1" wrapperClass="px-1" height={20} width={20} />
       ) : (
-        error && <InfoTip className="mx-2 text-red-500/90" text={error} />
+        error && <InfoTip className="z-10 mx-2 text-red-500/90" text={error} />
       )}
       {props.extraChild}
-    </div>
+    </label>
   );
 };
 export default Input;

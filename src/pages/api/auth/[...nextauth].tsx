@@ -1,3 +1,4 @@
+import browserRoutes from "@/common/browserRoutes";
 import { prisma } from "@/lib/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcrypt";
@@ -6,6 +7,8 @@ import NextAuth, { AuthOptions } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+import { randomUUID } from "crypto";
+import { BASE_URL } from "@/common/const";
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -26,6 +29,7 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize({ email, password }: any, req) {
+        console.log("signin");
         if (!email || !password) throw new Error("Invalid credentials");
 
         const existUser = await prisma.user.findUnique({ where: { email } });
@@ -41,6 +45,7 @@ export const authOptions: AuthOptions = {
           if (!isPasswordCorrect) {
             throw new Error("Invalid password");
           }
+          console.log("existUser", existUser);
           return existUser;
         }
       },
@@ -68,6 +73,8 @@ export const authOptions: AuthOptions = {
               name: username.length
                 ? username
                 : generateUsername({ useHyphen: false }),
+              image:
+                "https://res.cloudinary.com/ds3ctqoro/image/upload/v1681982298/blank_avatar_egolkc.png",
             },
           });
           return newUser;
@@ -76,9 +83,30 @@ export const authOptions: AuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET as string,
+  callbacks: {
+    jwt: async (jwtResp) => {
+      console.log("jwtResp", jwtResp);
+
+      const { token, user } = jwtResp;
+      if (user) {
+        token.userId = user.id;
+      }
+      return token;
+    },
+    session: (sessionResp) => {
+      console.log("sessionResp", sessionResp);
+
+      const { session, user, token } = sessionResp;
+      return {
+        ...session,
+        user: { ...session.user, id: token.userId },
+      };
+    },
+  },
   session: { strategy: "jwt" },
+  // pages: {
+  //   signIn: browserRoutes.login,
+  // },
 };
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+export default NextAuth(authOptions);

@@ -19,6 +19,8 @@ import { useState } from "react";
 import { AiOutlineGithub, AiOutlineGoogle } from "react-icons/ai";
 import { useDispatch } from "react-redux";
 import { emailRegexp } from "./common/const";
+import { sign } from "crypto";
+import { CLIENT_RENEG_WINDOW } from "tls";
 
 interface IDefaultValues {
   email: string;
@@ -114,7 +116,7 @@ const LoginPage = (props: LoginPageProps) => {
       const res = await signIn(type.toLowerCase(), {
         email,
         password,
-				username,
+        username,
         redirect: false,
       });
       if (res?.error) {
@@ -127,6 +129,23 @@ const LoginPage = (props: LoginPageProps) => {
       setIsFetching(false);
     }
   };
+
+	const handleAuth = async (provider: string) => {
+		setIsFetching(true)
+		try {
+			const res = await signIn(provider, {
+        redirect: false,
+      });
+			if (res?.error) {
+				return dispatch(popupActions.setMessage(res.error))
+			}
+			router.push(browserRoutes.index)
+		} catch (error) {
+			console.warn(error)
+		} finally {
+			setIsFetching(false)
+		}
+	}
 
   useEffectAfterMount(() => {
     validateFields();
@@ -202,14 +221,14 @@ const LoginPage = (props: LoginPageProps) => {
         <button
           disabled={isFetching}
           className="p-1 text-lg rounded-full bg-cyan-2"
-          onClick={() => signIn("google", {redirect: false})}
+          onClick={() => handleAuth("google")}
         >
           <AiOutlineGoogle />
         </button>
         <button
           disabled={isFetching}
           className="p-1 text-lg rounded-full bg-cyan-2"
-          onClick={() => signIn("github", {redirect: false})}
+          onClick={() => handleAuth('github')}
         >
           <AiOutlineGithub />
         </button>
