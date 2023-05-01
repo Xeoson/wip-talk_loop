@@ -3,10 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import browserRoutes from "./common/browserRoutes";
 
 
-// export { default } from "next-auth/middleware";
-
-// export const config = { matcher: [browserRoutes.index] };
-
 export async function middleware(req: NextRequest) {
 	const protectedUrls = [browserRoutes.index];
   const { pathname } = req.nextUrl;
